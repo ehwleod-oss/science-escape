@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과학실 방탈출 게임: 비밀의 온도계를 찾아라!</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Celebration Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'jua': ['Jua', 'sans-serif'],
+                        'sans': ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        'science-blue': '#4A90E2',
+                        'science-light': '#EBF5FF',
+                        'science-green': '#2ECC71',
+                        'science-yellow': '#F1C40F',
+                        'science-orange': '#E67E22',
+                        'science-purple': '#9B59B6',
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(74, 144, 226, 0.4)' },
+                            '50%': { boxShadow: '0 0 30px rgba(74, 144, 226, 0.8)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            min-height: 100vh;
+        }
+        .font-jua {
+            font-family: 'Jua', sans-serif;
+        }
+        .page-card {
+            transition: all 0.3s ease-in-out;
+        }
+        /* Custom scrollbar for better visual quality */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 md:p-8 min-h-screen select-none">
+
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border-4 border-blue-200 overflow-hidden relative">
+        
+        <!-- Header Bar -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white text-center relative shadow-md">
+            <div class="flex items-center justify-between px-2">
+                <span id="display-team-badge" class="bg-blue-700/60 text-xs md:text-sm font-bold px-3 py-1 rounded-full border border-blue-300 hidden">
+                    <i class="fa-solid font-jua fa-users mr-1"></i> <span id="team-badge-text">1모둠</span>
+                </span>
+                <h1 class="font-jua text-xl md:text-2xl text-yellow-300 tracking-wider mx-auto">
+                    🧪 과학실 방탈출 게임 🔐
+                </h1>
+                <div class="w-16 text-right">
+                    <span id="step-indicator" class="text-xs md:text-sm font-bold bg-white/20 px-2 py-1 rounded-lg hidden">
+                        <span id="current-step-num">1</span> / 4
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Alert Modal (Replacing browser alert) -->
+        <div id="custom-alert" class="hidden absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl transform scale-100 transition-all border-4 border-red-400">
+                <div class="text-4xl text-red-500 mb-3"><i class="fa-solid fa-circle-exclamation"></i></div>
+                <h3 class="font-jua text-xl text-gray-800 mb-2" id="alert-title">잠깐만요!</h3>
+                <p class="text-gray-600 text-sm md:text-base font-semibold mb-5" id="alert-message">측정한 온도를 올바르게 입력해주세요!</p>
+                <button onclick="closeAlert()" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-jua text-lg rounded-xl shadow-md transition transform active:scale-95">
+                    확인했습니다 👍
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Dynamic Pages Area -->
+        <div class="p-6 md:p-8">
+
+            <!-- PAGE 1: 게임 안내 & 모둠 선택 -->
+            <div id="page-1" class="page-card text-center space-y-6">
+                <div class="relative inline-block">
+                    <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2 text-5xl text-blue-600 border-4 border-blue-300 shadow-inner">
+                        🕵️‍♂️
+                    </div>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white font-jua text-xs px-2 py-1 rounded-full animate-pulse">긴급!</span>
+                </div>
+
+                <div>
+                    <h2 class="font-jua text-2xl md:text-3xl text-gray-800 mb-2">"비밀의 온도계를 찾아라!"</h2>
+                    <p class="text-gray-600 text-sm md:text-base font-medium">온도 측정 미션을 완수하고 문을 열어라!</p>
+                </div>
+
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-left space-y-2 text-xs md:text-sm text-gray-700">
+                    <div class="font-bold text-blue-800 text-sm md:text-base flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-clipboard-list text-blue-600"></i> [게임 규칙 안내]
+                    </div>
+                    <p>1. 과학실 비상 단금장치가 작동하여 문이 잠겼습니다!</p>
+                    <p>2. 지정된 <strong>4가지 온도계</strong>로 대상의 온도를 측정한 뒤 값을 정확히 입력하세요.</p>
+                    <p>3. 각 미션을 해결할 때마다 암호가 하나씩 해독됩니다.</p>
+                    <p>4. 네 임무를 모두 완수하면 과학실에서 무사히 탈출할 수 있습니다!</p>
+                </div>
+
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 flex items-center justify-between">
+                    <label for="team-select" class="font-jua text-lg text-amber-900 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-amber-600"></i> 우리 모둠 선택:
+                    </label>
+                    <select id="team-select" class="bg-white border-2 border-amber-400 font-jua text-lg text-amber-900 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer">
+                        <option value="1모둠">1 모둠 🚀</option>
+                        <option value="2모둠">2 모둠 🌟</option>
+                        <option value="3모둠">3 모둠 ⚡</option>
+                        <option value="4모둠">4 모둠 🔥</option>
+                        <option value="5모둠">5 모둠 💎</option>
+                    </select>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-jua text-xl md:text-2xl rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 transition">
+                    게임 시작하기 🚀
+                </button>
+            </div>
+
+            <!-- PAGE 2: 첫 번째 임무 -->
+            <div id="page-2" class="page-card hidden space-y-6">
+                <div class="flex justify-between items-center bg-red-50 p-3 rounded-2xl border border-red-200">
+                    <span class="font-jua text-red-600 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-temperature-full"></i> 첫 번째 임무 (1/4)
+                    </span>
+                    <span class="bg-red-500 text-white font-jua text-xs px-3 py-1 rounded-full">알코올 온도계</span>
+                </div>
+
+                <div class="text-center">
+                    <h2 class="font-jua text-2xl text-gray-800 mb-2">교실 온도 재기</h2>
+                    <p class="text-gray-600 text-sm">과학실 곳곳에 배치된 알코올 온도계로 교실 온도를 측정해보세요!</p>
+                </div>
+
+                <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center space-y-3">
+                    <div class="text-5xl">🌡️</div>
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 text-xs md:text-sm text-yellow-900 font-medium">
+                        💡 <strong>측정 주의사항:</strong> 액체 기둥의 끝에 눈높이를 맞추어 똑바로 바라보고 읽어주세요!
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-jua text-lg text-gray-700 text-center">측정한 교실 온도를 입력하세요</label>
+                    <div class="flex items-center justify-center gap-3">
+                        <input type="number" id="temp-1" step="0.1" placeholder="24.5" 
+                            class="w-36 text-center font-jua text-3xl p-3 border-4 border-blue-400 rounded-2xl focus:outline-none focus:border-indigo-500 shadow-inner">
+                        <span class="font-jua text-3xl text-gray-700">°C</span>
+                    </div>
+                </div>
+
+                <button onclick="submitMission(1)" class="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    제출하기 ✓
+                </button>
+            </div>
+
+            <!-- PAGE 3: 첫 번째 임무 완료 -->
+            <div id="page-3" class="page-card hidden text-center space-y-6 py-4">
+                <div class="text-6xl animate-bounce">🎉</div>
+                <div class="space-y-2">
+                    <span class="bg-green-100 text-green-700 font-jua px-4 py-1 rounded-full text-sm">MISSION COMPLETE</span>
+                    <h2 class="font-jua text-2xl md:text-3xl text-gray-800">첫 번째 임무 완료!</h2>
+                    <p class="text-green-600 font-bold text-lg">🔑 첫 번째 암호 해독 성공!</p>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-600">
+                    <p>알코올 온도계로 기록한 교실 온도: <strong id="val-display-1" class="text-blue-600 text-base">0 °C</strong></p>
+                </div>
+
+                <button onclick="goToPage(4)" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    다음 임무로 이동 ➡️
+                </button>
+            </div>
+
+            <!-- PAGE 4: 두 번째 임무 -->
+            <div id="page-4" class="page-card hidden space-y-6">
+                <div class="flex justify-between items-center bg-orange-50 p-3 rounded-2xl border border-orange-200">
+                    <span class="font-jua text-orange-600 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check"></i> 두 번째 임무 (2/4)
+                    </span>
+                    <span class="bg-orange-500 text-white font-jua text-xs px-3 py-1 rounded-full">탐침 온도계</span>
+                </div>
+
+                <div class="text-center">
+                    <h2 class="font-jua text-2xl text-gray-800 mb-2">모래의 온도 재기</h2>
+                    <p class="text-gray-600 text-sm">상자에 담긴 모래 속 깊숙이 탐침을 넣어 온도를 측정해보세요!</p>
+                </div>
+
+                <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center space-y-3">
+                    <div class="text-5xl">🏖️</div>
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 text-xs md:text-sm text-yellow-900 font-medium">
+                        💡 <strong>측정 주의사항:</strong> 탐침 센서 끝부분이 모래 중간에 완전히 묻히도록 푹 찌르고 기다려주세요!
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-jua text-lg text-gray-700 text-center">측정한 모래 온도를 입력하세요</label>
+                    <div class="flex items-center justify-center gap-3">
+                        <input type="number" id="temp-2" step="0.1" placeholder="22.0" 
+                            class="w-36 text-center font-jua text-3xl p-3 border-4 border-orange-400 rounded-2xl focus:outline-none focus:border-indigo-500 shadow-inner">
+                        <span class="font-jua text-3xl text-gray-700">°C</span>
+                    </div>
+                </div>
+
+                <button onclick="submitMission(2)" class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    제출하기 ✓
+                </button>
+            </div>
+
+            <!-- PAGE 5: 두 번째 임무 완료 -->
+            <div id="page-5" class="page-card hidden text-center space-y-6 py-4">
+                <div class="text-6xl animate-bounce">🎉</div>
+                <div class="space-y-2">
+                    <span class="bg-green-100 text-green-700 font-jua px-4 py-1 rounded-full text-sm">MISSION COMPLETE</span>
+                    <h2 class="font-jua text-2xl md:text-3xl text-gray-800">두 번째 임무 완료!</h2>
+                    <p class="text-green-600 font-bold text-lg">🔑 두 번째 암호 해독 성공!</p>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-600">
+                    <p>탐침 온도계로 기록한 모래 온도: <strong id="val-display-2" class="text-orange-600 text-base">0 °C</strong></p>
+                </div>
+
+                <button onclick="goToPage(6)" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    다음 임무로 이동 ➡️
+                </button>
+            </div>
+
+            <!-- PAGE 6: 세 번째 임무 -->
+            <div id="page-6" class="page-card hidden space-y-6">
+                <div class="flex justify-between items-center bg-purple-50 p-3 rounded-2xl border border-purple-200">
+                    <span class="font-jua text-purple-600 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-wifi"></i> 세 번째 임무 (3/4)
+                    </span>
+                    <span class="bg-purple-500 text-white font-jua text-xs px-3 py-1 rounded-full">적외선 온도계</span>
+                </div>
+
+                <div class="text-center">
+                    <h2 class="font-jua text-2xl text-gray-800 mb-2">모둠 책상 온도 재기</h2>
+                    <p class="text-gray-600 text-sm">적외선 온도계로 모둠 책상 표면의 온도를 겨누어 측정해보세요!</p>
+                </div>
+
+                <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center space-y-3">
+                    <div class="text-5xl">🪑</div>
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 text-xs md:text-sm text-yellow-900 font-medium">
+                        💡 <strong>측정 주의사항:</strong> 책상 표면과 적외선 온도계 사이의 거리를 적당히 유지하고 버튼을 누르세요!
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-jua text-lg text-gray-700 text-center">측정한 책상 온도를 입력하세요</label>
+                    <div class="flex items-center justify-center gap-3">
+                        <input type="number" id="temp-3" step="0.1" placeholder="23.8" 
+                            class="w-36 text-center font-jua text-3xl p-3 border-4 border-purple-400 rounded-2xl focus:outline-none focus:border-indigo-500 shadow-inner">
+                        <span class="font-jua text-3xl text-gray-700">°C</span>
+                    </div>
+                </div>
+
+                <button onclick="submitMission(3)" class="w-full py-4 bg-purple-500 hover:bg-purple-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    제출하기 ✓
+                </button>
+            </div>
+
+            <!-- PAGE 7: 세 번째 임무 완료 -->
+            <div id="page-7" class="page-card hidden text-center space-y-6 py-4">
+                <div class="text-6xl animate-bounce">🎉</div>
+                <div class="space-y-2">
+                    <span class="bg-green-100 text-green-700 font-jua px-4 py-1 rounded-full text-sm">MISSION COMPLETE</span>
+                    <h2 class="font-jua text-2xl md:text-3xl text-gray-800">세 번째 임무 완료!</h2>
+                    <p class="text-green-600 font-bold text-lg">🔑 세 번째 암호 해독 성공!</p>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-600">
+                    <p>적외선 온도계로 기록한 책상 온도: <strong id="val-display-3" class="text-purple-600 text-base">0 °C</strong></p>
+                </div>
+
+                <button onclick="goToPage(8)" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    다음 임무로 이동 ➡️
+                </button>
+            </div>
+
+            <!-- PAGE 8: 네 번째 임무 -->
+            <div id="page-8" class="page-card hidden space-y-6">
+                <div class="flex justify-between items-center bg-cyan-50 p-3 rounded-2xl border border-cyan-200">
+                    <span class="font-jua text-cyan-600 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> 네 번째 임무 (4/4)
+                    </span>
+                    <span class="bg-cyan-600 text-white font-jua text-xs px-3 py-1 rounded-full">MBL 온도 센서</span>
+                </div>
+
+                <div class="text-center">
+                    <h2 class="font-jua text-2xl text-gray-800 mb-2">비커에 담긴 물의 온도 재기</h2>
+                    <p class="text-gray-600 text-sm">정밀한 MBL 디지털 센서를 비커 물속에 담가 정밀 온도를 입력하세요!</p>
+                </div>
+
+                <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-center space-y-3">
+                    <div class="text-5xl">🥛</div>
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 text-xs md:text-sm text-yellow-900 font-medium">
+                        💡 <strong>측정 주의사항:</strong> 디지털 센서 화면의 숫자가 일정해질 때까지 잠시 기다렸다가 기록하세요!
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block font-jua text-lg text-gray-700 text-center">측정한 물의 온도를 입력하세요</label>
+                    <div class="flex items-center justify-center gap-3">
+                        <input type="number" id="temp-4" step="0.1" placeholder="25.3" 
+                            class="w-36 text-center font-jua text-3xl p-3 border-4 border-cyan-400 rounded-2xl focus:outline-none focus:border-indigo-500 shadow-inner">
+                        <span class="font-jua text-3xl text-gray-700">°C</span>
+                    </div>
+                </div>
+
+                <button onclick="submitMission(4)" class="w-full py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    제출하기 ✓
+                </button>
+            </div>
+
+            <!-- PAGE 9: 네 번째 임무 완료 -->
+            <div id="page-9" class="page-card hidden text-center space-y-6 py-4">
+                <div class="text-6xl animate-bounce">🔓</div>
+                <div class="space-y-2">
+                    <span class="bg-emerald-100 text-emerald-700 font-jua px-4 py-1 rounded-full text-sm">ALL MISSIONS CLEARED</span>
+                    <h2 class="font-jua text-2xl md:text-3xl text-gray-800">모든 임무 완료!</h2>
+                    <p class="text-emerald-600 font-bold text-lg">✨ 모든 비상 잠금장치가 해제되었습니다!</p>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-600">
+                    <p>MBL 센서로 기록한 물 온도: <strong id="val-display-4" class="text-cyan-600 text-base">0 °C</strong></p>
+                </div>
+
+                <button onclick="goToPage(10)" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-jua text-xl md:text-2xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5 active:translate-y-0">
+                    최종 결과 확인하기 🔓
+                </button>
+            </div>
+
+            <!-- PAGE 10: 최종 결과 보고서 -->
+            <div id="page-10" class="page-card hidden text-center space-y-6">
+                <div class="inline-block bg-yellow-100 text-yellow-800 border border-yellow-300 font-jua px-4 py-1 rounded-full text-lg">
+                    🏆 탈출 성공 리포트
+                </div>
+
+                <div>
+                    <h2 class="font-jua text-3xl text-gray-800 mb-1" id="final-team-title">1모둠 축하합니다!</h2>
+                    <p class="text-emerald-600 font-bold text-xl font-jua">과학실 탈출 성공! 🎉</p>
+                </div>
+
+                <!-- 온도 측정 결과 카드 4종 리포트 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-3 flex items-center gap-3">
+                        <div class="text-3xl">🌡️</div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500">1단계 (알코올 온도계)</div>
+                            <div class="font-jua text-sm text-gray-700">교실 온도</div>
+                            <div class="font-jua text-xl text-red-600" id="report-temp-1">0 °C</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-orange-50 border-2 border-orange-200 rounded-2xl p-3 flex items-center gap-3">
+                        <div class="text-3xl">🏖️</div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500">2단계 (탐침 온도계)</div>
+                            <div class="font-jua text-sm text-gray-700">모래 온도</div>
+                            <div class="font-jua text-xl text-orange-600" id="report-temp-2">0 °C</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-3 flex items-center gap-3">
+                        <div class="text-3xl">🪑</div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500">3단계 (적외선 온도계)</div>
+                            <div class="font-jua text-sm text-gray-700">책상 온도</div>
+                            <div class="font-jua text-xl text-purple-600" id="report-temp-3">0 °C</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-cyan-50 border-2 border-cyan-200 rounded-2xl p-3 flex items-center gap-3">
+                        <div class="text-3xl">🥛</div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-500">4단계 (MBL 센서)</div>
+                            <div class="font-jua text-sm text-gray-700">물 온도</div>
+                            <div class="font-jua text-xl text-cyan-600" id="report-temp-4">0 °C</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs md:text-sm text-blue-900 font-medium">
+                    👏 4가지 서로 다른 온도계의 용도와 특징을 아주 잘 활용하였습니다!
+                </div>
+
+                <button onclick="resetGame()" class="w-full py-4 bg-gray-700 hover:bg-gray-800 text-white font-jua text-xl rounded-2xl shadow-lg transition active:scale-98">
+                    다시 하기 🔄
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Game State Variables
+        let gameState = {
+            selectedTeam: '1모둠',
+            temperatures: {
+                1: null,
+                2: null,
+                3: null,
+                4: null
+            }
+        };
+
+        // Start Game from Page 1
+        function startGame() {
+            const teamSelect = document.getElementById('team-select');
+            gameState.selectedTeam = teamSelect.value;
+            
+            // Update Header Team Badge
+            document.getElementById('team-badge-text').innerText = gameState.selectedTeam;
+            document.getElementById('display-team-badge').classList.remove('hidden');
+            
+            goToPage(2);
+        }
+
+        // Navigation Controller
+        function goToPage(pageNumber) {
+            // Hide all pages
+            for (let i = 1; i <= 10; i++) {
+                const page = document.getElementById(`page-${i}`);
+                if (page) page.classList.add('hidden');
+            }
+
+            // Show target page
+            const targetPage = document.getElementById(`page-${pageNumber}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            // Update Header Step Indicator
+            const stepIndicator = document.getElementById('step-indicator');
+            const stepNumText = document.getElementById('current-step-num');
+
+            if ([2, 4, 6, 8].includes(pageNumber)) {
+                stepIndicator.classList.remove('hidden');
+                if (pageNumber === 2) stepNumText.innerText = '1';
+                if (pageNumber === 4) stepNumText.innerText = '2';
+                if (pageNumber === 6) stepNumText.innerText = '3';
+                if (pageNumber === 8) stepNumText.innerText = '4';
+            } else {
+                stepIndicator.classList.add('hidden');
+            }
+
+            // Page 10 Final Special Effects
+            if (pageNumber === 10) {
+                triggerConfetti();
+                document.getElementById('final-team-title').innerText = `${gameState.selectedTeam} 축하합니다!`;
+            }
+
+            // Scroll to top smooth
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mission Submission & Input Validation
+        function submitMission(step) {
+            const inputEl = document.getElementById(`temp-${step}`);
+            const val = inputEl.value.trim();
+
+            if (val === "" || isNaN(val)) {
+                showAlert("측정한 온도를 정확히 입력해주세요! (°C)");
+                return;
+            }
+
+            const parsedVal = parseFloat(val).toFixed(1);
+            gameState.temperatures[step] = parsedVal;
+
+            // Update intermediate display text
+            const displayEl = document.getElementById(`val-display-${step}`);
+            if (displayEl) displayEl.innerText = `${parsedVal} °C`;
+
+            // Update page 10 report text
+            const reportEl = document.getElementById(`report-temp-${step}`);
+            if (reportEl) reportEl.innerText = `${parsedVal} °C`;
+
+            // Transition to corresponding success completion page
+            if (step === 1) goToPage(3);
+            if (step === 2) goToPage(5);
+            if (step === 3) goToPage(7);
+            if (step === 4) goToPage(9);
+        }
+
+        // Alert Dialog Controls
+        function showAlert(msg) {
+            document.getElementById('alert-message').innerText = msg;
+            document.getElementById('custom-alert').classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').classList.add('hidden');
+        }
+
+        // Confetti Fireworks Effect for Final Page
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Reset Game to Start
+        function resetGame() {
+            gameState = {
+                selectedTeam: '1모둠',
+                temperatures: { 1: null, 2: null, 3: null, 4: null }
+            };
+
+            for (let i = 1; i <= 4; i++) {
+                const inputEl = document.getElementById(`temp-${i}`);
+                if (inputEl) inputEl.value = '';
+            }
+
+            document.getElementById('display-team-badge').classList.add('hidden');
+            goToPage(1);
+        }
+    </script>
+</body>
+</html>
